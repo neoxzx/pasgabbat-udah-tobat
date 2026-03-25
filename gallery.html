@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery // PASGABAT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #d4af37; --dark: #050505; }
+        body { background: var(--dark); color: #fff; font-family: 'Montserrat', sans-serif; padding-top: 120px; }
+        
+        #loader-wrapper { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999; transition: opacity 0.8s; }
+        .loader-circle { width: 80px; height: 80px; border: 3px solid transparent; border-top: 3px solid var(--gold); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        nav { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); z-index: 1000; background: rgba(0,0,0,0.9); padding: 12px 30px; border-radius: 50px; border: 1px solid var(--gold); display: flex; gap: 25px; }
+        nav a { color: #fff; text-decoration: none; font-size: 0.75rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; }
+
+        .gallery-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; padding: 50px; }
+        .frame { background: #fff; padding: 15px 15px 50px 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); width: 260px; transition: 0.4s; animation: float 6s ease-in-out infinite; cursor: pointer; }
+        .frame img { width: 100%; height: 200px; object-fit: cover; }
+        .frame:hover { transform: scale(1.1) rotate(0deg) !important; z-index: 10; border: 2px solid var(--gold); }
+        .frame:nth-child(odd) { transform: rotate(-4deg); animation-delay: 1s; }
+        .frame:nth-child(even) { transform: rotate(4deg); }
+        .caption { color: #333; margin-top: 15px; font-weight: bold; font-family: 'Cinzel'; font-size: 0.8rem; text-align: center; }
+
+        @keyframes float { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-15px) rotate(4deg); } }
+    </style>
+</head>
+<body>
+    <div id="loader-wrapper"><div class="loader-circle"></div></div>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="livechat.html">Live Chat</a>
+        <a href="anggota.html">Anggota</a>
+    </nav>
+
+    <h2 style="text-align:center; font-family:'Cinzel'; color:var(--gold); font-size: 2.5rem;">MUSEUM WACANA</h2>
+    <div class="gallery-container">
+        <div class="frame"><img src="https://picsum.photos/300/200?random=10"><div class="caption">WACANA PANTAI</div></div>
+        <div class="frame"><img src="https://picsum.photos/300/200?random=11"><div class="caption">BUKBER FIKTIF</div></div>
+        <div class="frame"><img src="https://picsum.photos/300/200?random=12"><div class="caption">HIKING GHAIB</div></div>
+        <div class="frame"><img src="https://picsum.photos/300/200?random=13"><div class="caption">NGOPI TEORI</div></div>
+    </div>
+
+    <script>
+        window.onload = () => { setTimeout(() => { document.getElementById('loader-wrapper').style.opacity = '0'; setTimeout(() => document.getElementById('loader-wrapper').style.display = 'none', 800); }, 1200); };
+    </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anggota // PASGABAT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #d4af37; --dark: #050505; }
+        body { background: var(--dark); color: #fff; font-family: 'Montserrat', sans-serif; padding-top: 120px; }
+        
+        /* Loader */
+        #loader-wrapper { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999; transition: opacity 0.8s; }
+        .loader-circle { width: 80px; height: 80px; border: 3px solid transparent; border-top: 3px solid var(--gold); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        nav { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); z-index: 1000; background: rgba(0,0,0,0.9); padding: 12px 30px; border-radius: 50px; border: 1px solid var(--gold); display: flex; gap: 25px; }
+        nav a { color: #fff; text-decoration: none; font-size: 0.75rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 30px; padding: 50px 10%; }
+        .card { background: #0a0a0a; border: 1px solid #222; padding: 25px; text-align: center; border-radius: 20px; cursor: pointer; transition: 0.4s; }
+        .card:hover { border-color: var(--gold); transform: translateY(-10px); box-shadow: 0 10px 30px rgba(212, 175, 55, 0.1); }
+        .profile-img { width: 120px; height: 120px; border-radius: 50%; border: 2px solid var(--gold); margin-bottom: 20px; object-fit: cover; }
+        h3 { font-family: 'Cinzel'; color: var(--gold); font-size: 1.3rem; }
+
+        /* Modal */
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-box { background: #111; border: 1px solid var(--gold); padding: 40px; border-radius: 20px; max-width: 450px; text-align: center; position: relative; animation: zoomIn 0.4s ease; }
+        .close { position: absolute; top: 15px; right: 20px; font-size: 2.5rem; color: var(--gold); cursor: pointer; }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+    </style>
+</head>
+<body>
+    <div id="loader-wrapper"><div class="loader-circle"></div></div>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="livechat.html">Live Chat</a>
+        <a href="anggota.html">Anggota</a>
+    </nav>
+
+    <h2 style="text-align:center; font-family:'Cinzel'; color:var(--gold); font-size: 2.5rem;">ELITE BOARD</h2>
+    <div class="grid" id="memberGrid"></div>
+
+    <div id="modal"><div class="modal-box">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <img id="mImg" class="profile-img" style="width:160px; height:160px;">
+        <h2 id="mName" style="color:var(--gold); font-family:'Cinzel'; margin-bottom:10px;"></h2>
+        <p id="mDesc" style="line-height:1.7; color:#ccc;"></p>
+    </div></div>
+
+    <script>
+        const members = [
+            { name: "Sist A", img: "https://picsum.photos/200?random=1", desc: "CEO Overthinking. Spesialisasi menganalisis masa depan yang belum tentu terjadi di jam 3 pagi." },
+            { name: "Sist B", img: "https://picsum.photos/200?random=2", desc: "Director of Healing. Pemegang rekor check-out tercepat dan pengusul wacana pantai abadi." },
+            { name: "Sist C", img: "https://picsum.photos/200?random=3", desc: "Intel Ghibah Global. Tidak ada informasi yang luput dari telinganya di radius 10 kilometer." },
+            { name: "Bro D", img: "https://picsum.photos/200?random=4", desc: "Chief Sticker Officer. Kurator stiker WhatsApp yang mampu merusak moralitas grup dalam satu klik." },
+            { name: "Bro E", img: "https://picsum.photos/200?random=5", desc: "Executive Silent Officer. Ahli dalam taktik infiltrasi 'Read Only' dan menghilang saat ada info kas." }
+        ];
+
+        const grid = document.getElementById('memberGrid');
+        members.forEach(m => {
+            grid.innerHTML += `<div class="card" onclick="openModal('${m.name}', '${m.img}', '${m.desc}')"><img src="${m.img}" class="profile-img"><h3>${m.name}</h3><small style="color:#666; letter-spacing:2px;">VIEW FILE</small></div>`;
+        });
+
+        function openModal(n, i, d) {
+            document.getElementById('mName').innerText = n;
+            document.getElementById('mImg').src = i;
+            document.getElementById('mDesc').innerText = d;
+            document.getElementById('modal').style.display = 'flex';
+        }
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+        window.onload = () => { setTimeout(() => { document.getElementById('loader-wrapper').style.opacity = '0'; setTimeout(() => document.getElementById('loader-wrapper').style.display = 'none', 800); }, 1000); };
+    </script>
+</body>
+</html>
