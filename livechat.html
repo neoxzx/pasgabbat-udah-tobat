@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Chat // PASGABAT</title>
+    <title>Live Chat Reply // PASGABAT</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #d4af37; --dark: #000; }
+        :root { --gold: #d4af37; --dark: #000; --gray: #1a1a1a; }
         body { background: var(--dark); color: #fff; font-family: 'Montserrat', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; margin: 0; }
         
         #loader-wrapper { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999; transition: opacity 0.8s; }
@@ -16,38 +16,54 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         nav { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); z-index: 1000; background: rgba(0,0,0,0.9); padding: 12px 30px; border-radius: 50px; border: 1px solid var(--gold); display: flex; gap: 25px; }
-        nav a { color: #fff; text-decoration: none; font-size: 0.75rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; }
+        nav a { color: #fff; text-decoration: none; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
 
-        .chat-container { flex: 1; margin: 120px 10% 20px; border: 1px solid var(--gold); display: flex; flex-direction: column; background: #050505; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); overflow: hidden; }
-        #messages { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 15px; }
-        .msg { padding: 12px 18px; border-radius: 12px; max-width: 80%; word-wrap: break-word; }
-        .msg-in { background: #1a1a1a; align-self: flex-start; border-left: 3px solid var(--gold); }
-        .msg-out { background: rgba(212, 175, 55, 0.2); align-self: flex-end; border: 1px solid var(--gold); }
-        .sender { font-size: 0.65rem; color: var(--gold); font-weight: bold; margin-bottom: 5px; display: block; }
+        .chat-container { flex: 1; margin: 100px 5% 20px; border: 1px solid var(--gold); display: flex; flex-direction: column; background: #050505; border-radius: 20px; overflow: hidden; }
+        #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
         
-        .input-area { padding: 20px; display: flex; gap: 10px; background: #111; }
-        input { flex: 1; background: #000; border: 1px solid #333; color: #fff; padding: 15px; border-radius: 10px; outline: none; }
-        button { background: var(--gold); border: none; padding: 0 25px; font-weight: bold; cursor: pointer; border-radius: 10px; color: #000; }
+        /* Message Styles */
+        .msg { padding: 10px 15px; border-radius: 12px; max-width: 75%; cursor: pointer; transition: 0.2s; position: relative; }
+        .msg:hover { background: rgba(255,255,255,0.05); }
+        .msg-in { background: var(--gray); align-self: flex-start; border-left: 3px solid var(--gold); }
+        .msg-out { background: rgba(212, 175, 55, 0.15); align-self: flex-end; border: 1px solid var(--gold); }
+        .sender { font-size: 0.65rem; color: var(--gold); font-weight: bold; margin-bottom: 5px; display: block; }
+
+        /* Reply Preview di dalam Bubble */
+        .reply-content { background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 5px; border-left: 2px solid var(--gold); font-size: 0.75rem; margin-bottom: 8px; color: #bbb; }
+
+        /* Reply Bar di atas Input Area */
+        #reply-bar { background: #222; padding: 10px 20px; display: none; border-top: 1px solid var(--gold); justify-content: space-between; align-items: center; }
+        #reply-bar span { font-size: 0.8rem; color: var(--gold); }
+        #reply-bar button { background: none; border: none; color: #ff4444; cursor: pointer; font-weight: bold; }
+
+        .input-area { padding: 15px; display: flex; gap: 10px; background: #111; }
+        input { flex: 1; background: #000; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 10px; outline: none; }
+        .send-btn { background: var(--gold); border: none; padding: 0 20px; font-weight: bold; cursor: pointer; border-radius: 10px; color: #000; }
     </style>
 </head>
 <body>
     <div id="loader-wrapper"><div class="loader-circle"></div></div>
+    
     <nav>
         <a href="index.html">Home</a>
-        <a href="gallery.html">Gallery</a>
         <a href="livechat.html">Live Chat</a>
-        <a href="anggota.html">Anggota</a>
     </nav>
+
     <div class="chat-container">
         <div id="messages"></div>
+
+        <div id="reply-bar">
+            <span id="reply-text">Membalas: ...</span>
+            <button onclick="cancelReply()">X</button>
+        </div>
+
         <div class="input-area">
-            <input type="text" id="chat-in" placeholder="Ketik pesan neural..." autocomplete="off" onkeypress="if(event.key==='Enter')send()">
-            <button onclick="send()">KIRIM</button>
+            <input type="text" id="chat-in" placeholder="Klik pesan untuk membalas..." autocomplete="off">
+            <button class="send-btn" onclick="send()">KIRIM</button>
         </div>
     </div>
 
     <script>
-        // BAGIAN YANG DIPERBAIKI (Config Lengkap & URL Singapore)
         const firebaseConfig = {
             apiKey: "AIzaSyA-_24DwSrWq6f9HWqO7Xs52TCvqq6p_c4",
             authDomain: "pasgabat-chat.firebaseapp.com",
@@ -58,51 +74,74 @@
             appId: "1:1027509963546:web:d9e9e51275352a595dbaa3"
         };
 
-        // Inisialisasi Firebase
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.database().ref("supreme_chat_v10");
+        const db = firebase.database().ref("chat_v11_reply");
         
-        let user = prompt("IDENTIFIKASI DIRI: Nama anda?") || "Anonymous";
+        let user = prompt("IDENTIFIKASI DIRI:") || "Anonymous";
+        let selectedReply = null; // Menyimpan data pesan yang dibalas
+
+        // Fungsi memicu mode reply
+        function setReply(sender, text) {
+            selectedReply = { sender, text };
+            document.getElementById('reply-bar').style.display = 'flex';
+            document.getElementById('reply-text').textContent = `Membalas ${sender}: "${text.substring(0, 20)}..."`;
+            document.getElementById('chat-in').focus();
+        }
+
+        function cancelReply() {
+            selectedReply = null;
+            document.getElementById('reply-bar').style.display = 'none';
+        }
 
         function send() {
             const input = document.getElementById('chat-in');
             if(!input.value.trim()) return;
-            
-            // Mengirim data ke Firebase
-            db.push().set({ 
-                sender: user, 
+
+            const msgData = {
+                sender: user,
                 text: input.value,
-                time: Date.now() 
-            });
+                timestamp: Date.now()
+            };
+
+            // Jika sedang membalas, masukkan data reply-nya
+            if(selectedReply) {
+                msgData.replyTo = selectedReply;
+            }
+
+            db.push().set(msgData);
             input.value = "";
+            cancelReply();
         }
 
-        // Mendengarkan pesan baru secara real-time
-        db.limitToLast(15).on("child_added", (snap) => {
+        db.limitToLast(20).on("child_added", (snap) => {
             const d = snap.val();
             const box = document.getElementById('messages');
             const div = document.createElement('div');
-            
             div.className = `msg ${d.sender === user ? 'msg-out' : 'msg-in'}`;
             
-            // Menggunakan textContent untuk pesan agar lebih aman
-            const senderHTML = `<span class="sender">${d.sender.toUpperCase()}</span>`;
-            div.innerHTML = senderHTML;
+            // Tambahkan fitur klik untuk reply
+            div.onclick = () => setReply(d.sender, d.text);
+
+            let replyHTML = "";
+            if(d.replyTo) {
+                replyHTML = `<div class="reply-content"><b>${d.replyTo.sender}</b>: ${d.replyTo.text}</div>`;
+            }
+
+            div.innerHTML = `
+                <span class="sender">${d.sender.toUpperCase()}</span>
+                ${replyHTML}
+                <div class="text-body"></div>
+            `;
             
-            const textNode = document.createTextNode(d.text);
-            div.appendChild(textNode);
+            // Keamanan teks agar tidak kena hack (XSS)
+            div.querySelector('.text-body').textContent = d.text;
             
             box.appendChild(div);
             box.scrollTop = box.scrollHeight;
         });
 
-        // Loader animation
-        window.onload = () => { 
-            setTimeout(() => { 
-                document.getElementById('loader-wrapper').style.opacity = '0'; 
-                setTimeout(() => document.getElementById('loader-wrapper').style.display = 'none', 800); 
-            }, 1000); 
-        };
+        document.getElementById('chat-in').onkeypress = (e) => { if(e.key === 'Enter') send(); };
+        window.onload = () => { setTimeout(() => { document.getElementById('loader-wrapper').style.display = 'none'; }, 1000); };
     </script>
 </body>
 </html>
