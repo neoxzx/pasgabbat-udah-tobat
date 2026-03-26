@@ -3,72 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PASGABAT // Live Chat v13</title>
+    <title>PASGABAT // Chat Fix Scroll</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
 
     <style>
-        :root { --gold: #d4af37; --dark: #0a0a0a; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root { --gold: #d4af37; --dark: #000; }
+        * { box-sizing: border-box; }
         
         body, html { 
             background: #000; color: #fff; font-family: 'Montserrat', sans-serif; 
-            margin: 0; padding: 0; height: 100%; width: 100%;
+            margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden;
         }
 
-        /* Navigasi Tetap di Atas */
+        /* Navigasi */
         nav { 
             position: fixed; top: 0; width: 100%; height: 60px;
-            background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--gold);
+            background: rgba(0,0,0,0.95); border-bottom: 1px solid var(--gold);
             display: flex; justify-content: center; align-items: center; gap: 15px; z-index: 1000;
         }
         nav a { color: #fff; text-decoration: none; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
 
-        /* Container Utama */
-        .chat-wrapper {
-            display: flex; flex-direction: column; height: 100vh; max-width: 800px; margin: 0 auto;
-        }
-
-        /* Area Pesan: Bisa di-Scroll */
+        /* AREA PESAN - PERBAIKAN SCROLL */
         #messages { 
-            flex: 1; overflow-y: scroll; padding: 80px 15px 150px 15px; /* Padding bawah besar agar tidak tertutup input */
-            display: flex; flex-direction: column; gap: 12px;
-            -webkit-overflow-scrolling: touch; /* Scroll halus di iPhone */
+            position: absolute;
+            top: 60px; /* Di bawah nav */
+            bottom: 80px; /* Di atas input */
+            left: 0; right: 0;
+            overflow-y: auto; 
+            padding: 20px 15px;
+            display: block; /* Mengganti flex agar scroll alami */
+            -webkit-overflow-scrolling: touch;
         }
 
         /* Bubble Chat */
-        .msg { padding: 12px; border-radius: 15px; max-width: 85%; cursor: pointer; position: relative; font-size: 0.95rem; line-height: 1.4; }
-        .msg-in { background: #1a1a1a; align-self: flex-start; border-left: 3px solid var(--gold); }
-        .msg-out { background: rgba(212, 175, 55, 0.15); align-self: flex-end; border: 1px solid var(--gold); }
+        .msg { 
+            padding: 12px; border-radius: 15px; max-width: 85%; 
+            margin-bottom: 15px; clear: both; /* Agar tidak tumpang tindih */
+            position: relative; font-size: 0.95rem; line-height: 1.4;
+            word-wrap: break-word;
+        }
+        .msg-in { background: #1a1a1a; float: left; border-left: 3px solid var(--gold); }
+        .msg-out { background: rgba(212, 175, 55, 0.15); float: right; border: 1px solid var(--gold); }
+        
         .sender { font-size: 0.65rem; color: var(--gold); font-weight: bold; margin-bottom: 4px; display: block; }
         .reply-box { background: rgba(255,255,255,0.1); padding: 8px; border-radius: 8px; border-left: 3px solid var(--gold); font-size: 0.75rem; margin-bottom: 8px; color: #ccc; }
 
-        /* Bagian Bawah: Reply Bar & Input (Fixed) */
+        /* Input Area (Bottom Fixed) */
         .bottom-area {
-            position: fixed; bottom: 0; width: 100%; max-width: 800px; background: #000; z-index: 999;
+            position: fixed; bottom: 0; width: 100%; background: #000; z-index: 999;
         }
-        
         #reply-bar { 
             background: #111; padding: 10px 20px; display: none; 
             border-top: 2px solid var(--gold); justify-content: space-between; align-items: center;
         }
-        #reply-bar span { font-size: 0.75rem; color: var(--gold); }
-
         .input-area { 
-            padding: 15px; display: flex; gap: 10px; border-top: 1px solid #222; align-items: center;
+            padding: 15px; display: flex; gap: 10px; border-top: 1px solid #222;
         }
         input { 
             flex: 1; background: #111; border: 1px solid #333; color: #fff; 
             padding: 12px 18px; border-radius: 25px; outline: none; font-size: 16px;
         }
-        input:focus { border-color: var(--gold); }
-        .send-btn { background: var(--gold); border: none; padding: 12px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; color: #000; }
+        .send-btn { background: var(--gold); border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; }
 
-        /* Scrollbar Style */
-        #messages::-webkit-scrollbar { width: 5px; }
-        #messages::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
+        /* Spacer agar pesan paling bawah tidak tertutup */
+        .spacer { height: 20px; clear: both; }
     </style>
 </head>
 <body>
@@ -76,21 +77,19 @@
     <nav>
         <a href="index.html">Home</a>
         <a href="livechat.html">Live Chat</a>
-        <a href="anggota.html">Anggota</a>
     </nav>
 
-    <div class="chat-wrapper">
-        <div id="messages"></div>
+    <div id="messages">
+        </div>
 
-        <div class="bottom-area">
-            <div id="reply-bar">
-                <span id="reply-text">Membalas...</span>
-                <button onclick="cancelReply()" style="background:none; border:none; color:red; font-weight:bold;">X</button>
-            </div>
-            <div class="input-area">
-                <input type="text" id="chat-in" placeholder="Klik pesan untuk balas..." autocomplete="off">
-                <button class="send-btn" onclick="send()">KIRIM</button>
-            </div>
+    <div class="bottom-area">
+        <div id="reply-bar">
+            <span id="reply-text" style="font-size: 0.75rem; color: var(--gold);">Membalas...</span>
+            <button onclick="cancelReply()" style="background:none; border:none; color:red; font-weight:bold;">BATAL</button>
+        </div>
+        <div class="input-area">
+            <input type="text" id="chat-in" placeholder="Klik pesan untuk balas..." autocomplete="off">
+            <button class="send-btn" onclick="send()">KIRIM</button>
         </div>
     </div>
 
@@ -106,19 +105,16 @@
         };
 
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.database().ref("global_chat_v13");
+        const db = firebase.database().ref("global_chat_v14");
         
-        let user = prompt("Masukkan Nama:") || "User_" + Math.floor(Math.random()*100);
+        let user = prompt("Masukkan Nama:") || "Anonim";
         let replyTarget = null;
-
-        const inputField = document.getElementById('chat-in');
-        const msgBox = document.getElementById('messages');
 
         function setReply(sender, text) {
             replyTarget = { sender, text };
             document.getElementById('reply-bar').style.display = 'flex';
             document.getElementById('reply-text').textContent = `Membalas ${sender}`;
-            inputField.focus();
+            document.getElementById('chat-in').focus();
         }
 
         function cancelReply() {
@@ -127,30 +123,40 @@
         }
 
         function send() {
-            const val = inputField.value.trim();
-            if(!val) return;
-            const data = { sender: user, text: val, timestamp: Date.now() };
+            const input = document.getElementById('chat-in');
+            if(!input.value.trim()) return;
+            const data = { sender: user, text: input.value, timestamp: Date.now() };
             if(replyTarget) { data.replyTo = replyTarget; }
             db.push().set(data);
-            inputField.value = "";
+            input.value = "";
             cancelReply();
         }
 
-        db.limitToLast(40).on("child_added", (snap) => {
+        db.limitToLast(50).on("child_added", (snap) => {
             const d = snap.val();
+            const msgBox = document.getElementById('messages');
             const div = document.createElement('div');
             const isMe = d.sender === user;
+            
             div.className = `msg ${isMe ? 'msg-out' : 'msg-in'}`;
             div.onclick = () => setReply(d.sender, d.text);
 
             let replyHTML = d.replyTo ? `<div class="reply-box"><b>${d.replyTo.sender}</b><br>${d.replyTo.text}</div>` : "";
-            div.innerHTML = `<span class="sender">${isMe ? 'SAYA' : d.sender.toUpperCase()}</span>${replyHTML}<div class="txt"></div>`;
+            div.innerHTML = `<span class="sender">${isMe ? 'SAYA' : d.sender.toUpperCase()}</span>${replyHTML}<span class="txt"></span>`;
             div.querySelector('.txt').textContent = d.text;
+            
             msgBox.appendChild(div);
+            
+            // Tambahkan spacer agar float tidak berantakan
+            const clearDiv = document.createElement('div');
+            clearDiv.style.clear = "both";
+            msgBox.appendChild(clearDiv);
+
+            // Scroll otomatis ke bawah hanya saat pesan baru masuk
             msgBox.scrollTop = msgBox.scrollHeight;
         });
 
-        inputField.onkeypress = (e) => { if(e.key === 'Enter') send(); };
+        document.getElementById('chat-in').onkeypress = (e) => { if(e.key === 'Enter') send(); };
     </script>
 </body>
 </html>
