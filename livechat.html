@@ -3,93 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PASGABAT FIX TOTAL</title>
+    <title>PASGABAT v30 // REPLY MODE</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        :root { --gold: #d4af37; --dark: #111; }
         body { background: #000; color: #fff; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
-        nav { padding: 15px; border-bottom: 1px solid #d4af37; text-align: center; font-weight: bold; font-size: 1.2em; }
-        #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 10px; border-radius: 10px; background: #1a1a1a; max-width: 80%; word-wrap: break-word; }
-        .me { align-self: flex-end; background: #d4af3722; border: 1px solid #d4af37; }
-        .input-bar { padding: 15px; background: #111; display: flex; gap: 10px; }
-        input[type="text"] { flex: 1; padding: 12px; border-radius: 20px; border: 1px solid #333; background: #000; color: #fff; outline: none; }
-        button { background: #d4af37; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
-        .snap-btn { background: #222; color: #d4af37; border: 1px solid #d4af37; }
-        img { width: 100%; border-radius: 10px; margin-top: 5px; }
+        nav { padding: 15px; border-bottom: 1px solid var(--gold); text-align: center; font-weight: bold; }
+        
+        #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+        
+        /* Bubble Chat */
+        .msg { padding: 10px; border-radius: 12px; background: #1a1a1a; max-width: 80%; position: relative; cursor: pointer; }
+        .me { align-self: flex-end; background: #d4af3722; border: 1px solid var(--gold); }
+        .sender { color: var(--gold); font-size: 0.7em; font-weight: bold; display: block; margin-bottom: 4px; }
+
+        /* Reply Preview di dalam Bubble */
+        .reply-content { background: rgba(255,255,255,0.1); border-left: 3px solid var(--gold); padding: 5px 8px; font-size: 0.8em; margin-bottom: 8px; border-radius: 4px; color: #bbb; }
+
+        /* Bar Balasan (Muncul di atas Input) */
+        #reply-bar { background: #222; padding: 10px 20px; display: none; justify-content: space-between; border-top: 1px solid var(--gold); align-items: center; }
+        #reply-bar span { font-size: 0.8em; color: var(--gold); }
+
+        .input-bar { padding: 15px; background: #000; display: flex; gap: 10px; align-items: center; }
+        input[type="text"] { flex: 1; padding: 12px; border-radius: 20px; border: 1px solid #333; background: #111; color: #fff; outline: none; }
+        button { background: var(--gold); border: none; padding: 10px 18px; border-radius: 20px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<nav>PASGABAT SUPRA v29</nav>
+<nav>PASGABAT SUPRA v30</nav>
 <div id="chat"></div>
+
+<div id="reply-bar">
+    <span id="reply-text">Membalas seseorang...</span>
+    <button onclick="cancelReply()" style="background:none; color:#ff4444; padding:5px">✕</button>
+</div>
 
 <div class="input-bar">
     <input type="file" id="f" style="display:none" accept="image/*">
-    <button class="snap-btn" onclick="document.getElementById('f').click()">📷</button>
-    <input type="text" id="t" placeholder="Ketik pesan...">
+    <button onclick="document.getElementById('f').click()">📷</button>
+    <input type="text" id="t" placeholder="Klik pesan untuk membalas..." autocomplete="off">
     <button onclick="kirimTeks()">KIRIM</button>
 </div>
 
 <script>
-    // --- JANGAN DIUBAH BAGIAN INI ---
     const S_URL = 'https://ebhucnypxltzxwzillmp.supabase.co';
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViaHVjbnlweGx0enh3emlsbG1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzIzNjIsImV4cCI6MjA5MDEwODM2Mn0.UHwMf9Ac-8KJgsvUQ1NH6yvuNaimpK994FPTBoIiimE';
-    
-    // Inisialisasi client
     const _supabase = supabase.createClient(S_URL, S_KEY);
-    // --- --- --- --- --- --- --- ---
 
     let user = prompt("Nama Kamu:") || "Anon";
+    let selectedReplyId = null; // Menyimpan ID pesan yang mau dibalas
+    let allMessages = []; // Menyimpan lokal untuk mencari teks reply
 
-    // Fungsi Render Pesan
+    // Fungsi Ambil Pesan
+    async function load() {
+        const { data } = await _supabase.from('message').select('*').order('created_at', { ascending: true });
+        if (data) {
+            allMessages = data;
+            document.getElementById('chat').innerHTML = "";
+            data.forEach(m => render(m));
+        }
+    }
+
+    // Fungsi Render
     function render(m) {
         const chat = document.getElementById('chat');
         const div = document.createElement('div');
         div.className = `msg ${m.sender === user ? 'me' : ''}`;
-        
+        div.onclick = () => setReply(m.id, m.sender, m.content); // Klik pesan untuk reply
+
+        let replyHtml = "";
+        if (m.reply_to) {
+            // Cari teks asli yang dibalas
+            const original = allMessages.find(x => x.id === m.reply_to);
+            const preview = original ? (original.is_snap ? "📷 Foto Snap" : original.content) : "Pesan dihapus";
+            replyHtml = `<div class="reply-content"><b>${original ? original.sender : 'System'}</b><br>${preview.substring(0,30)}...</div>`;
+        }
+
         if (m.is_snap) {
-            div.innerHTML = `<small>${m.sender}</small><br><div style="cursor:pointer; background:#333; padding:10px; border-radius:5px" onmousedown="this.nextElementSibling.style.display='block'; this.style.display='none'" onmouseup="this.parentElement.remove()">📷 SNAP (Tahan)</div><img src="${m.content}" style="display:none">`;
+            div.innerHTML = `${replyHtml}<span class="sender">${m.sender}</span><div style="background:#333; padding:10px; border-radius:5px">📷 SNAP (Tahan)</div><img src="${m.content}" style="display:none; width:100%">`;
+            // Logika Tahan Foto
+            const btn = div.querySelector('div');
+            btn.onmousedown = btn.ontouchstart = () => { div.querySelector('img').style.display = 'block'; btn.style.display = 'none'; };
+            btn.onmouseup = btn.ontouchend = () => { div.remove(); };
         } else {
-            div.innerHTML = `<small style="color:#d4af37">${m.sender}</small><br>${m.content}`;
+            div.innerHTML = `${replyHtml}<span class="sender">${m.sender}</span>${m.content}`;
         }
         
         chat.appendChild(div);
         chat.scrollTop = chat.scrollHeight;
     }
 
-    // Ambil Pesan Lama
-    async function load() {
-        const { data, error } = await _supabase.from('message').select('*').order('created_at', { ascending: true });
-        if (data) data.forEach(m => render(m));
-        if (error) console.error("Error load:", error.message);
+    // Fungsi Set Balasan (Saat pesan diklik)
+    function setReply(id, sender, content) {
+        selectedReplyId = id;
+        document.getElementById('reply-bar').style.display = 'flex';
+        document.getElementById('reply-text').innerText = `Membalas ${sender}: "${content.substring(0, 20)}..."`;
+        document.getElementById('t').focus();
+    }
+
+    function cancelReply() {
+        selectedReplyId = null;
+        document.getElementById('reply-bar').style.display = 'none';
     }
 
     // Kirim Teks
     async function kirimTeks() {
         const inp = document.getElementById('t');
         if (!inp.value.trim()) return;
-        const txt = inp.value;
+        
+        const dataInsert = { 
+            sender: user, 
+            content: inp.value, 
+            is_snap: false,
+            reply_to: selectedReplyId // Masukkan ID pesan yang dibalas
+        };
+
         inp.value = "";
-        await _supabase.from('message').insert([{ sender: user, content: txt, is_snap: false }]);
+        cancelReply();
+        await _supabase.from('message').insert([dataInsert]);
     }
 
-    // Kirim Foto
-    document.getElementById('f').onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const name = Date.now() + "_" + file.name;
-        
-        // Upload
-        const { error: upErr } = await _supabase.storage.from('photos').upload(name, file);
-        if (upErr) return alert("Upload gagal: " + upErr.message);
-
-        // Link
-        const url = `${S_URL}/storage/v1/object/public/photos/${name}`;
-        await _supabase.from('message').insert([{ sender: user, content: url, is_snap: true }]);
-    };
-
     // Realtime
-    _supabase.channel('room1').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message' }, p => render(p.new)).subscribe();
+    _supabase.channel('any').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message' }, p => {
+        allMessages.push(p.new);
+        render(p.new);
+    }).subscribe();
 
     load();
 </script>
