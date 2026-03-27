@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PASGABAT v42 // FIX REALTIME</title>
+    <title>PASGABAT v43 // MOBILE OPTIMIZED</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
@@ -17,48 +17,46 @@
             color: #fff; 
             font-family: 'Montserrat', sans-serif; 
             height: 100vh; 
+            width: 100vw;
             overflow: hidden; 
             display: flex; 
             flex-direction: column;
             padding-top: 85px; 
         }
 
-        /* --- NAVBAR FLOATING --- */
+        /* --- NAVBAR FLOATING (RESPONSIF MOBILE) --- */
         nav { 
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%); 
-            z-index: 1000; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); 
-            padding: 12px 25px; border-radius: 50px; border: 1px solid var(--gold); 
-            display: flex; gap: 20px; box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
-            white-space: nowrap;
+            position: fixed; top: 15px; left: 50%; transform: translateX(-50%); 
+            z-index: 1000; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); 
+            padding: 10px 15px; border-radius: 50px; border: 1px solid var(--gold); 
+            display: flex; gap: 12px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+            width: 90%; max-width: 400px; justify-content: center;
         }
-        nav a { color: #fff; text-decoration: none; font-size: 0.65rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; transition: 0.3s; }
-        nav a:hover { color: var(--gold); text-shadow: 0 0 5px var(--gold); }
+        nav a { color: #fff; text-decoration: none; font-size: 0.6rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+        nav a:hover { color: var(--gold); }
 
         /* --- MESSAGES AREA --- */
-        #messages { flex: 1; overflow-y: auto; padding: 10px 15px; display: flex; flex-direction: column; gap: 12px; }
+        #messages { flex: 1; overflow-y: auto; padding: 10px 15px; display: flex; flex-direction: column; gap: 10px; }
         
-        .msg { padding: 12px; border-radius: 15px; max-width: 85%; clear: both; cursor: pointer; position: relative; animation: fadeIn 0.2s; transition: transform 0.1s; }
-        .msg:active { transform: scale(0.97); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
+        .msg { padding: 10px 14px; border-radius: 18px; max-width: 85%; clear: both; cursor: pointer; position: relative; font-size: 14px; line-height: 1.4; transition: transform 0.1s; }
+        .msg-in { background: #1a1a1a; align-self: flex-start; border-bottom-left-radius: 4px; border-left: 3px solid var(--gold); }
+        .msg-out { background: rgba(212, 175, 55, 0.15); align-self: flex-end; border-bottom-right-radius: 4px; border: 1px solid var(--gold); }
+        .sender { color: var(--gold); font-size: 10px; font-weight: bold; margin-bottom: 3px; display: block; }
+
+        .replied-box { background: rgba(255,255,255,0.08); border-left: 2px solid var(--gold); padding: 4px 8px; font-size: 11px; margin-bottom: 6px; border-radius: 4px; color: #999; }
+
+        /* SNAP STYLE MOBILE */
+        .snap-btn-msg { background: #222; padding: 15px; border-radius: 12px; text-align: center; border: 1px dashed var(--gold); margin: 5px 0; }
+        .snap-img { width: 100%; max-width: 300px; border-radius: 10px; display: none; margin-top: 5px; }
+
+        /* --- INPUT AREA MOBILE --- */
+        #reply-bar { background: #111; padding: 8px 15px; display: none; justify-content: space-between; border-top: 1px solid var(--gold); align-items: center; font-size: 12px; }
         
-        .msg-in { background: #111; align-self: flex-start; border-left: 3px solid var(--gold); }
-        .msg-out { background: rgba(212, 175, 55, 0.1); align-self: flex-end; border: 1px solid var(--gold); }
-        .sender { color: var(--gold); font-size: 0.65em; font-weight: bold; margin-bottom: 4px; display: block; }
-
-        .replied-box { background: rgba(255,255,255,0.05); border-left: 2px solid var(--gold); padding: 5px 8px; font-size: 0.75em; margin-bottom: 8px; border-radius: 4px; color: #888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-        /* SNAP STYLE */
-        .snap-btn-msg { background: #1a1a1a; padding: 12px; border-radius: 10px; text-align: center; border: 1px dashed var(--gold); }
-        .snap-img { width: 100%; border-radius: 10px; margin-top: 5px; display: none; pointer-events: none; }
-
-        /* --- INPUT & REPLY BAR --- */
-        #reply-bar { background: #0a0a0a; padding: 8px 15px; display: none; justify-content: space-between; border-top: 1px solid var(--gold); align-items: center; }
+        .input-bar { padding: 12px; background: #000; display: flex; gap: 8px; border-top: 1px solid #222; align-items: center; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+        input[type="text"] { flex: 1; padding: 12px 16px; border-radius: 25px; border: 1px solid #333; background: #111; color: #fff; outline: none; font-size: 16px; } /* font 16px mencegah auto-zoom di iPhone */
         
-        .input-bar { padding: 15px; background: #000; display: flex; gap: 10px; border-top: 1px solid #222; align-items: center; }
-        input[type="text"] { flex: 1; padding: 12px; border-radius: 20px; border: 1px solid #333; background: #111; color: #fff; outline: none; font-size: 16px; }
-        .btn { background: var(--gold); border: none; padding: 10px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; color: #000; }
-        .loader { animation: spin 1s infinite linear; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .btn-action { background: var(--gold); border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #000; flex-shrink: 0; }
+        .btn-send { width: auto; padding: 0 20px; border-radius: 25px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -73,15 +71,15 @@
 <div id="messages"></div>
 
 <div id="reply-bar">
-    <span id="reply-label" style="font-size:0.75em; color:#d4af37">Membalas...</span>
-    <button onclick="cancelReply()" style="background:none; border:none; color:var(--red); cursor:pointer; font-size: 1.2em;">✕</button>
+    <span id="reply-label" style="color:#d4af37">Membalas...</span>
+    <button onclick="cancelReply()" style="background:none; border:none; color:var(--red); font-size: 1.5em; padding: 0 5px;">✕</button>
 </div>
 
 <div class="input-bar">
     <input type="file" id="f-in" style="display:none" accept="image/*">
-    <button class="btn" onclick="document.getElementById('f-in').click()" id="cam-btn">📷</button>
+    <button class="btn-action" onclick="document.getElementById('f-in').click()" id="cam-btn">📷</button>
     <input type="text" id="t-in" placeholder="Ketik pesan..." autocomplete="off">
-    <button class="btn" onclick="sendText()">KIRIM</button>
+    <button class="btn-action btn-send" onclick="sendText()">KIRIM</button>
 </div>
 
 <script>
@@ -100,7 +98,7 @@
         }
 
         async function deleteMsg(id) {
-            if (confirm("Hapus pesan ini untuk semua orang?")) {
+            if (confirm("Hapus pesan ini?")) {
                 await _supa.from('message').delete().eq('id', id);
             }
         }
@@ -108,21 +106,22 @@
         function render(m) {
             if(!m || !m.sender || !m.content || m.sender === "undefined") return;
             const box = document.getElementById('messages');
-            
-            // Cek jika pesan sudah ada (biar tidak double)
             if(document.getElementById(`msg-${m.id}`)) return;
 
             const div = document.createElement('div');
             div.className = `msg ${m.sender === user ? 'msg-out' : 'msg-in'}`;
             div.id = `msg-${m.id}`;
             
-            // Tahan 1 detik untuk hapus
+            // Mobile: Tahan 1 detik untuk hapus
             let timer;
-            div.onmousedown = div.ontouchstart = () => { timer = setTimeout(() => { deleteMsg(m.id); }, 1000); };
-            div.onmouseup = div.ontouchend = div.onmouseleave = () => clearTimeout(timer);
+            const startPress = () => { timer = setTimeout(() => { deleteMsg(m.id); }, 1000); };
+            const endPress = () => { clearTimeout(timer); };
+            div.addEventListener('touchstart', startPress);
+            div.addEventListener('touchend', endPress);
+            div.onmousedown = startPress; div.onmouseup = endPress;
 
-            // Klik untuk reply
-            div.onclick = () => { 
+            // Klik sekali untuk reply
+            div.onclick = (e) => { 
                 rId = m.id; 
                 document.getElementById('reply-bar').style.display='flex'; 
                 document.getElementById('reply-label').innerText = `Balas ${m.sender}`; 
@@ -150,8 +149,10 @@
             const snapWrap = div.querySelector('.snap-wrap');
             if(snapWrap) {
                 const btn = snapWrap.querySelector('.snap-btn-msg'), img = snapWrap.querySelector('.snap-img');
-                snapWrap.onmousedown = snapWrap.ontouchstart = (e) => { e.stopPropagation(); clearTimeout(timer); img.style.display = 'block'; btn.style.display = 'none'; };
-                snapWrap.onmouseup = snapWrap.ontouchend = () => div.remove();
+                const showSnap = (e) => { e.stopPropagation(); clearTimeout(timer); img.style.display = 'block'; btn.style.display = 'none'; };
+                const hideSnap = () => { div.remove(); };
+                snapWrap.addEventListener('touchstart', showSnap);
+                snapWrap.addEventListener('touchend', hideSnap);
             }
             box.scrollTop = box.scrollHeight;
         }
@@ -169,29 +170,20 @@
         document.getElementById('f-in').onchange = async (e) => {
             const file = e.target.files[0]; if(!file) return;
             const camBtn = document.getElementById('cam-btn');
-            camBtn.textContent = "⏳"; camBtn.classList.add('loader');
+            camBtn.innerText = "⏳";
             const name = `${Date.now()}_${file.name.replace(/\s/g,'_')}`;
             await _supa.storage.from('photos').upload(name, file);
             const url = `${URL}/storage/v1/object/public/photos/${name}`;
-            const curRid = rId; cancelReply();
-            await _supa.from('message').insert([{ sender: user, content: url, is_snap: true, reply_to: curRid }]);
-            camBtn.textContent = "📷"; camBtn.classList.remove('loader');
-            e.target.value = "";
+            await _supa.from('message').insert([{ sender: user, content: url, is_snap: true, reply_to: rId }]);
+            camBtn.innerText = "📷"; cancelReply();
         };
 
-        // --- REALTIME FIXED (MENDENGARKAN SEMUA PERUBAHAN) ---
-        _supa.channel('any_change').on('postgres_changes', { event: '*', schema: 'public', table: 'message' }, p => { 
-            if(p.eventType === 'INSERT') {
-                cache.push(p.new); 
-                render(p.new); 
-            } else if(p.eventType === 'DELETE') {
-                const el = document.getElementById(`msg-${p.old.id}`);
-                if(el) el.remove();
-            }
+        _supa.channel('room_mobile').on('postgres_changes', { event: '*', schema: 'public', table: 'message' }, p => { 
+            if(p.eventType === 'INSERT') { cache.push(p.new); render(p.new); }
+            else if(p.eventType === 'DELETE') { document.getElementById(`msg-${p.old.id}`)?.remove(); }
         }).subscribe();
         
         loadData();
-        document.getElementById('t-in').onkeypress = (e) => { if(e.key === 'Enter') sendText(); };
     };
 </script>
 </body>
