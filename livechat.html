@@ -3,190 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PASGABAT v44 // MOBILE FIXED</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
-    
+    <title>PASGABAT v46 // BYPASS CONNECT</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #d4af37; --dark: #000; --red: #ff4444; }
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            background: #000; color: #fff; font-family: 'Montserrat', sans-serif; 
-            height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column;
-            padding-top: 85px; 
-        }
-
-        /* NAVBAR */
-        nav { 
-            position: fixed; top: 15px; left: 50%; transform: translateX(-50%); 
-            z-index: 1000; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); 
-            padding: 10px 15px; border-radius: 50px; border: 1px solid var(--gold); 
-            display: flex; gap: 12px; width: 90%; max-width: 400px; justify-content: center;
-        }
-        nav a { color: #fff; text-decoration: none; font-size: 0.6rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
-
-        /* MESSAGES */
-        #messages { flex: 1; overflow-y: auto; padding: 10px 15px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 10px 14px; border-radius: 18px; max-width: 85%; clear: both; position: relative; font-size: 14px; }
-        .msg-in { background: #1a1a1a; align-self: flex-start; border-left: 3px solid var(--gold); }
-        .msg-out { background: rgba(212, 175, 55, 0.15); align-self: flex-end; border: 1px solid var(--gold); }
-        .sender { color: var(--gold); font-size: 10px; font-weight: bold; margin-bottom: 3px; display: block; }
-
-        /* SNAP & REPLY */
-        .replied-box { background: rgba(255,255,255,0.08); border-left: 2px solid var(--gold); padding: 4px 8px; font-size: 11px; margin-bottom: 6px; border-radius: 4px; color: #999; }
-        .snap-btn-msg { background: #222; padding: 15px; border-radius: 12px; text-align: center; border: 1px dashed var(--gold); }
-        .snap-img { width: 100%; max-width: 300px; border-radius: 10px; display: none; }
-
-        /* INPUT AREA */
-        #reply-bar { background: #111; padding: 8px 15px; display: none; justify-content: space-between; border-top: 1px solid var(--gold); align-items: center; }
-        .input-bar { padding: 12px; background: #000; display: flex; gap: 8px; border-top: 1px solid #222; align-items: center; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
-        input[type="text"] { flex: 1; padding: 12px 16px; border-radius: 25px; border: 1px solid #333; background: #111; color: #fff; outline: none; font-size: 16px; }
-        .btn-action { background: var(--gold); border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #000; flex-shrink: 0; }
-        
-        /* Error Toast */
-        #error-log { position: fixed; top: 100px; left: 10px; right: 10px; background: rgba(255,0,0,0.8); font-size: 10px; padding: 5px; border-radius: 5px; display: none; z-index: 2000; }
+        body { background: #000; color: #fff; font-family: 'Montserrat', sans-serif; height: 100vh; display: flex; flex-direction: column; margin: 0; }
+        #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px 15px; border-radius: 15px; max-width: 80%; background: #1a1a1a; border-left: 3px solid #d4af37; }
+        .msg-out { align-self: flex-end; background: rgba(212, 175, 55, 0.2); border: 1px solid #d4af37; border-left: none; }
+        .sender { color: #d4af37; font-size: 10px; font-weight: bold; display: block; }
+        .input-bar { padding: 15px; background: #000; display: flex; gap: 10px; border-top: 1px solid #333; }
+        input { flex: 1; padding: 12px; border-radius: 20px; border: 1px solid #333; background: #111; color: #fff; font-size: 16px; outline: none; }
+        button { background: #d4af37; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; }
+        #status { position: fixed; top: 10px; width: 100%; text-align: center; font-size: 9px; color: #d4af37; }
     </style>
 </head>
 <body>
 
-<div id="error-log"></div>
-
-<nav>
-    <a href="index.html">Home</a>
-    <a href="gallery.html">Gallery</a>
-    <a href="livechat.html" style="color: var(--gold);">Live Chat</a>
-    <a href="anggota.html">Anggota</a>
-</nav>
-
+<div id="status">SINKRONISASI NEURAL...</div>
 <div id="messages"></div>
 
-<div id="reply-bar">
-    <span id="reply-label" style="color:#d4af37; font-size: 12px;">Membalas...</span>
-    <button onclick="cancelReply()" style="background:none; border:none; color:var(--red); font-size: 20px;">✕</button>
-</div>
-
 <div class="input-bar">
-    <input type="file" id="f-in" style="display:none" accept="image/*">
-    <button class="btn-action" onclick="document.getElementById('f-in').click()" id="cam-btn">📷</button>
     <input type="text" id="t-in" placeholder="Ketik pesan..." autocomplete="off">
-    <button class="btn-action" onclick="sendText()" style="width: auto; padding: 0 15px; border-radius: 25px; font-weight:bold;">KIRIM</button>
+    <button onclick="send()">KIRIM</button>
 </div>
 
 <script>
-    const URL = 'https://ebhucnypxltzxwzillmp.supabase.co';
-    const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViaHVjbnlweGx0enh3emlsbG1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzIzNjIsImV4cCI6MjA5MDEwODM2Mn0.UHwMf9Ac-8KJgsvUQ1NH6yvuNaimpK994FPTBoIiimE';
-    const _supa = supabase.createClient(URL, KEY);
+    // MASUKKAN DATA DARI GAMBAR image_caaf08.png KAMU
+    const S_URL = 'https://ebhucnypxltzxwzillmp.supabase.co';
+    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViaHVjbnlweGx0enh3emlsbG1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzIzNjIsImV4cCI6MjA5MDEwODM2Mn0.UHwMf9Ac-8KJgsvUQ1NH6yvuNaimpK994FPTBoIiimE';
 
-    let user = prompt("Identitas Kamu:") || "User_" + Math.floor(Math.random()*100);
-    let rId = null;
-    let cache = [];
+    const _supa = supabase.createClient(S_URL, S_KEY);
+    let user = localStorage.getItem('p_name') || prompt("Siapa nama kamu?") || "Guest";
+    localStorage.setItem('p_name', user);
 
-    // Fungsi Logger untuk Mobile
-    function logError(msg) {
-        const log = document.getElementById('error-log');
-        log.innerText = "Debug: " + msg;
-        log.style.display = "block";
-        setTimeout(() => { log.style.display = "none"; }, 5000);
-    }
-
-    async function loadData() {
+    async function load() {
         try {
             const { data, error } = await _supa.from('message').select('*').order('created_at', { ascending: true });
             if (error) throw error;
-            if (data) { 
-                cache = data; 
-                document.getElementById('messages').innerHTML = ""; 
-                data.forEach(m => render(m)); 
-            }
-        } catch (e) { logError("Gagal Load: " + e.message); }
-    }
-
-    async function deleteMsg(id) {
-        if (confirm("Hapus pesan?")) {
-            await _supa.from('message').delete().eq('id', id);
+            document.getElementById('messages').innerHTML = "";
+            data.forEach(m => render(m));
+            document.getElementById('status').innerText = "SYSTEM ONLINE | USER: " + user.toUpperCase();
+        } catch (e) {
+            document.getElementById('status').innerText = "KONEKSI GAGAL: " + e.message;
         }
     }
 
     function render(m) {
-        if(!m || !m.sender || !m.content || document.getElementById(`msg-${m.id}`)) return;
+        if (!m.content || document.getElementById('msg-'+m.id)) return;
         const box = document.getElementById('messages');
         const div = document.createElement('div');
-        div.className = `msg ${m.sender === user ? 'msg-out' : 'msg-in'}`;
-        div.id = `msg-${m.id}`;
-        
-        let timer;
-        div.ontouchstart = () => { timer = setTimeout(() => { deleteMsg(m.id); }, 1000); };
-        div.ontouchend = () => { clearTimeout(timer); };
-        div.onclick = () => { 
-            rId = m.id; 
-            document.getElementById('reply-bar').style.display='flex'; 
-            document.getElementById('reply-label').innerText = `Balas ${m.sender}`; 
-            document.getElementById('t-in').focus();
-        };
-
-        let html = `<span class="sender">${m.sender.toUpperCase()}</span>`;
-        if (m.reply_to) {
-            const orig = cache.find(x => x.id === m.reply_to);
-            if(orig) html += `<div class="replied-box"><b>${orig.sender}</b>: ${orig.is_snap ? '📷 Foto' : orig.content.substring(0,20)}</div>`;
-        }
-
-        if (m.is_snap) {
-            html += `<div class="snap-wrap">
-                        <div class="snap-btn-msg">📸 SNAP TERKUNCI<br><small style="font-size:9px;opacity:0.5">Tahan untuk melihat</small></div>
-                        <img src="${m.content}" class="snap-img">
-                     </div>`;
-        } else {
-            const s = document.createElement('span'); s.textContent = m.content; html += s.outerHTML;
-        }
-        
-        div.innerHTML = html;
+        div.id = 'msg-' + m.id;
+        div.className = `msg ${m.sender === user ? 'msg-out' : ''}`;
+        div.innerHTML = `<span class="sender">${m.sender}</span>${m.content}`;
         box.appendChild(div);
-
-        const snapWrap = div.querySelector('.snap-wrap');
-        if(snapWrap) {
-            const btn = snapWrap.querySelector('.snap-btn-msg'), img = snapWrap.querySelector('.snap-img');
-            snapWrap.ontouchstart = (e) => { e.stopPropagation(); clearTimeout(timer); img.style.display = 'block'; btn.style.display = 'none'; };
-            snapWrap.ontouchend = () => div.remove();
-        }
         box.scrollTop = box.scrollHeight;
     }
 
-    window.cancelReply = () => { rId = null; document.getElementById('reply-bar').style.display='none'; };
-
-    window.sendText = async () => {
+    window.send = async () => {
         const inp = document.getElementById('t-in');
-        if(!inp.value.trim()) return;
-        const v = inp.value; inp.value = ""; 
-        const { error } = await _supa.from('message').insert([{ sender: user, content: v, is_snap: false, reply_to: rId }]);
-        if(error) logError("Kirim Gagal: " + error.message);
-        cancelReply();
+        if (!inp.value.trim()) return;
+        const txt = inp.value; inp.value = "";
+        const { error } = await _supa.from('message').insert([{ sender: user, content: txt }]);
+        if (error) alert("Gagal: " + error.message);
     }
 
-    document.getElementById('f-in').onchange = async (e) => {
-        const file = e.target.files[0]; if(!file) return;
-        document.getElementById('cam-btn').innerText = "⏳";
-        const name = `${Date.now()}_img`;
-        await _supa.storage.from('photos').upload(name, file);
-        const url = `${URL}/storage/v1/object/public/photos/${name}`;
-        await _supa.from('message').insert([{ sender: user, content: url, is_snap: true, reply_to: rId }]);
-        document.getElementById('cam-btn').innerText = "📷"; cancelReply();
-    };
+    // REALTIME - Kunci utama agar HP langsung update
+    _supa.channel('any').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message' }, p => {
+        render(p.new);
+    }).subscribe();
 
-    // REALTIME DENGAN AUTO-RECONNECT
-    const setupRealtime = () => {
-        _supa.channel('db-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'message' }, p => { 
-            if(p.eventType === 'INSERT') { cache.push(p.new); render(p.new); }
-            else if(p.eventType === 'DELETE') { document.getElementById(`msg-${p.old.id}`)?.remove(); }
-        }).subscribe((status) => {
-            if(status === 'CLOSED') setTimeout(setupRealtime, 2000); // Reconnect jika mati
-            if(status === 'CHANNEL_ERROR') logError("Realtime Error! Cek Replication di Supabase.");
-        });
-    }
-
-    setupRealtime();
-    loadData();
+    load();
+    document.getElementById('t-in').onkeypress = (e) => { if(e.key === 'Enter') send(); };
 </script>
 </body>
 </html>
