@@ -3,26 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PASGABAT v36 // FIX TOTAL</title>
+    <title>PASGABAT v37 // REBIRTH</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #d4af37; --dark: #000; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #000; color: #fff; font-family: 'Montserrat', sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
-        nav { height: 60px; border-bottom: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        nav { height: 60px; border-bottom: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; font-weight: bold; background: #000; }
         #messages { flex: 1; overflow-y: auto; padding: 20px 15px; display: flex; flex-direction: column; gap: 12px; }
-        
         .msg { padding: 12px; border-radius: 15px; max-width: 85%; clear: both; cursor: pointer; position: relative; }
         .msg-in { background: #1a1a1a; align-self: flex-start; border-left: 3px solid var(--gold); }
         .msg-out { background: rgba(212, 175, 55, 0.15); align-self: flex-end; border: 1px solid var(--gold); }
         .sender { color: var(--gold); font-size: 0.7em; font-weight: bold; margin-bottom: 5px; display: block; }
-        
         .replied-box { background: rgba(255,255,255,0.07); border-left: 3px solid var(--gold); padding: 5px 8px; font-size: 0.8em; margin-bottom: 8px; border-radius: 4px; color: #999; }
         #reply-bar { background: #1a1a1a; padding: 10px 15px; display: none; justify-content: space-between; border-top: 1px solid var(--gold); align-items: center; }
-        
         .input-bar { padding: 15px; background: #000; display: flex; gap: 10px; border-top: 1px solid #222; align-items: center; }
         input[type="text"] { flex: 1; padding: 12px; border-radius: 20px; border: 1px solid #333; background: #111; color: #fff; outline: none; }
         .btn { background: var(--gold); border: none; padding: 10px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; color: #000; }
@@ -30,12 +26,12 @@
 </head>
 <body>
 
-<nav>PASGABAT SUPRA v36</nav>
+<nav>PASGABAT SUPRA v37</nav>
 <div id="messages"></div>
 
 <div id="reply-bar">
-    <span id="reply-label" style="font-size:0.8em; color:#d4af37">Membalas seseorang...</span>
-    <button onclick="cancelReply()" style="background:none; border:none; color:red; cursor:pointer; font-size: 1.2em;">✕</button>
+    <span id="reply-label" style="font-size:0.8em; color:#d4af37">Membalas...</span>
+    <button onclick="cancelReply()" style="background:none; border:none; color:red; cursor:pointer">✕</button>
 </div>
 
 <div class="input-bar">
@@ -46,11 +42,6 @@
 </div>
 
 <script>
-    // Backup Library jika JS Delivr gagal
-    if (typeof supabase === 'undefined') {
-        document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\/script>');
-    }
-
     window.onload = function() {
         const S_URL = 'https://ebhucnypxltzxwzillmp.supabase.co';
         const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViaHVjbnlweGx0enh3emlsbG1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzIzNjIsImV4cCI6MjA5MDEwODM2Mn0.UHwMf9Ac-8KJgsvUQ1NH6yvuNaimpK994FPTBoIiimE';
@@ -66,14 +57,13 @@
         }
 
         function render(m) {
-            // PROTEKSI: Jika data sender atau content tidak ada, abaikan pesan rusak
-            if(!m.sender || !m.content || m.sender === "undefined") return;
+            // SARINGAN KETAT: Jika sender atau content tidak jelas, JANGAN TAMPILKAN
+            if(!m || !m.sender || !m.content || m.sender === "undefined" || m.content === "undefined") return;
 
             const box = document.getElementById('messages');
             const div = document.createElement('div');
             div.className = `msg ${m.sender === user ? 'msg-out' : 'msg-in'}`;
             
-            // Klik untuk membalas
             div.onclick = () => { 
                 rId = m.id; 
                 document.getElementById('reply-bar').style.display='flex'; 
@@ -82,32 +72,26 @@
             };
 
             let html = `<span class="sender">${m.sender}</span>`;
-            
-            // Logika Balasan
             if (m.reply_to) {
                 const orig = cache.find(x => x.id === m.reply_to);
-                if(orig) {
-                    html += `<div class="replied-box"><b>${orig.sender}</b>: ${orig.is_snap ? '📷 Foto' : orig.content.substring(0,20)}</div>`;
-                }
+                if(orig) html += `<div class="replied-box"><b>${orig.sender}</b>: ${orig.is_snap ? '📷 Foto' : (orig.content || '').substring(0,20)}</div>`;
             }
 
             if (m.is_snap) {
-                html += `<div class="snap-btn-msg" style="background:#333; padding:10px; border-radius:5px; text-align:center">📸 SNAP (Tahan)</div>
+                html += `<div class="btn-snap" style="background:#333; padding:10px; border-radius:5px; text-align:center">📸 SNAP (Tahan)</div>
                          <img src="${m.content}" style="display:none; width:100%; border-radius:8px; margin-top:5px">`;
             } else {
-                const s = document.createElement('span'); 
-                s.textContent = m.content; 
-                html += s.outerHTML;
+                const s = document.createElement('span'); s.textContent = m.content; html += s.outerHTML;
             }
             
             div.innerHTML = html;
 
-            // PASANG LOGIKA SNAP HANYA JIKA ADA TOMBOLNYA (Anti-Error)
-            const snapBtn = div.querySelector('.snap-btn-msg');
-            const snapImg = div.querySelector('img');
-            if(snapBtn && snapImg) {
-                snapBtn.onmousedown = snapBtn.ontouchstart = () => { snapImg.style.display='block'; snapBtn.style.display='none'; };
-                snapBtn.onmouseup = snapBtn.ontouchend = () => { div.remove(); };
+            // LOGIKA TAHAN FOTO (Hanya jalan jika tombol ada)
+            const b = div.querySelector('.btn-snap');
+            const i = div.querySelector('img');
+            if(b && i) {
+                b.onmousedown = b.ontouchstart = (e) => { e.stopPropagation(); i.style.display='block'; b.style.display='none'; };
+                b.onmouseup = b.ontouchend = () => { div.remove(); };
             }
 
             box.appendChild(div);
