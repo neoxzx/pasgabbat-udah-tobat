@@ -3,84 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PASGABAT FIX</title>
+    <title>PASGABAT FIX TOTAL</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; }
-        nav { padding: 20px; border-bottom: 1px solid #d4af37; text-align: center; font-weight: bold; }
-        #chat-box { height: 70vh; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 10px; border-radius: 10px; background: #1a1a1a; max-width: 80%; }
-        .mine { align-self: flex-end; background: #d4af3722; border: 1px solid #d4af37; }
-        .input-area { position: fixed; bottom: 0; width: 100%; padding: 20px; background: #000; display: flex; gap: 10px; }
-        input { flex: 1; padding: 10px; border-radius: 5px; border: 1px solid #333; background: #111; color: #fff; }
-        button { padding: 10px 20px; background: #d4af37; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .snap { padding: 10px; border: 1px dashed #d4af37; text-align: center; cursor: pointer; }
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        nav { padding: 15px; border-bottom: 1px solid #d4af37; text-align: center; font-weight: bold; font-size: 1.2em; }
+        #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px; border-radius: 10px; background: #1a1a1a; max-width: 80%; word-wrap: break-word; }
+        .me { align-self: flex-end; background: #d4af3722; border: 1px solid #d4af37; }
+        .input-bar { padding: 15px; background: #111; display: flex; gap: 10px; }
+        input[type="text"] { flex: 1; padding: 12px; border-radius: 20px; border: 1px solid #333; background: #000; color: #fff; outline: none; }
+        button { background: #d4af37; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        .snap-btn { background: #222; color: #d4af37; border: 1px solid #d4af37; }
+        img { width: 100%; border-radius: 10px; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-<nav>PASGABAT SUPRA v28</nav>
-<div id="chat-box"></div>
+<nav>PASGABAT SUPRA v29</nav>
+<div id="chat"></div>
 
-<div class="input-area">
-    <input type="file" id="f-in" style="display:none" accept="image/*">
-    <button onclick="document.getElementById('f-in').click()">📷</button>
-    <input type="text" id="t-in" placeholder="Ketik pesan...">
-    <button onclick="kirim()">KIRIM</button>
+<div class="input-bar">
+    <input type="file" id="f" style="display:none" accept="image/*">
+    <button class="snap-btn" onclick="document.getElementById('f').click()">📷</button>
+    <input type="text" id="t" placeholder="Ketik pesan...">
+    <button onclick="kirimTeks()">KIRIM</button>
 </div>
 
 <script>
-    // 1. SETTING URL & KEY (PASTIKAN TIDAK ADA SPASI)
-    const URL = 'https://ebhucnypxltzxwzillmp.supabase.co';
-    const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViaHVjbnlweGx0enh3emlsbG1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzIzNjIsImV4cCI6MjA5MDEwODM2Mn0.UHwMf9Ac-8KJgsvUQ1NH6yvuNaimpK994FPTBoIiimE';
+    // --- JANGAN DIUBAH BAGIAN INI ---
+    const S_URL = 'https://ebhucnypxltzxwzillmp.supabase.co';
+    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViaHVjbnlweGx0enh3emlsbG1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzIzNjIsImV4cCI6MjA5MDEwODM2Mn0.UHwMf9Ac-8KJgsvUQ1NH6yvuNaimpK994FPTBoIiimE';
     
-    const client = supabase.createClient(URL, KEY);
-    let user = prompt("Nama:") || "Anon";
+    // Inisialisasi client
+    const _supabase = supabase.createClient(S_URL, S_KEY);
+    // --- --- --- --- --- --- --- ---
 
-    // 2. Kirim Teks
-    async function kirim() {
-        const inp = document.getElementById('t-in');
-        if(!inp.value.trim()) return;
-        await client.from('message').insert([{ sender: user, content: inp.value, is_snap: false }]);
-        inp.value = "";
-    }
+    let user = prompt("Nama Kamu:") || "Anon";
 
-    // 3. Kirim Foto
-    document.getElementById('f-in').onchange = async (e) => {
-        const file = e.target.files[0];
-        if(!file) return;
-        const name = Date.now() + "_" + file.name;
-        
-        await client.storage.from('photos').upload(name, file);
-        const imgUrl = `${URL}/storage/v1/object/public/photos/${name}`;
-        await client.from('message').insert([{ sender: user, content: imgUrl, is_snap: true }]);
-    };
-
-    // 4. Render
+    // Fungsi Render Pesan
     function render(m) {
-        const box = document.getElementById('chat-box');
+        const chat = document.getElementById('chat');
         const div = document.createElement('div');
-        div.className = `msg ${m.sender === user ? 'mine' : ''}`;
+        div.className = `msg ${m.sender === user ? 'me' : ''}`;
         
-        if(m.is_snap) {
-            div.innerHTML = `<small>${m.sender}</small><div class="snap" onmousedown="this.nextElementSibling.style.display='block'; this.style.display='none'" onmouseup="this.parentElement.remove()">📷 SNAP (Tahan)</div><img src="${m.content}" style="display:none; width:100%; border-radius:10px">`;
+        if (m.is_snap) {
+            div.innerHTML = `<small>${m.sender}</small><br><div style="cursor:pointer; background:#333; padding:10px; border-radius:5px" onmousedown="this.nextElementSibling.style.display='block'; this.style.display='none'" onmouseup="this.parentElement.remove()">📷 SNAP (Tahan)</div><img src="${m.content}" style="display:none">`;
         } else {
-            div.innerHTML = `<small>${m.sender}</small><br>${m.content}`;
+            div.innerHTML = `<small style="color:#d4af37">${m.sender}</small><br>${m.content}`;
         }
         
-        box.appendChild(div);
-        box.scrollTop = box.scrollHeight;
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
     }
 
-    // 5. Realtime
-    client.channel('any').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message' }, p => render(p.new)).subscribe();
-
-    // Load awal
-    async function awal() {
-        const { data } = await client.from('message').select('*').order('created_at', { ascending: true });
-        if(data) data.forEach(m => render(m));
+    // Ambil Pesan Lama
+    async function load() {
+        const { data, error } = await _supabase.from('message').select('*').order('created_at', { ascending: true });
+        if (data) data.forEach(m => render(m));
+        if (error) console.error("Error load:", error.message);
     }
-    awal();
+
+    // Kirim Teks
+    async function kirimTeks() {
+        const inp = document.getElementById('t');
+        if (!inp.value.trim()) return;
+        const txt = inp.value;
+        inp.value = "";
+        await _supabase.from('message').insert([{ sender: user, content: txt, is_snap: false }]);
+    }
+
+    // Kirim Foto
+    document.getElementById('f').onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const name = Date.now() + "_" + file.name;
+        
+        // Upload
+        const { error: upErr } = await _supabase.storage.from('photos').upload(name, file);
+        if (upErr) return alert("Upload gagal: " + upErr.message);
+
+        // Link
+        const url = `${S_URL}/storage/v1/object/public/photos/${name}`;
+        await _supabase.from('message').insert([{ sender: user, content: url, is_snap: true }]);
+    };
+
+    // Realtime
+    _supabase.channel('room1').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message' }, p => render(p.new)).subscribe();
+
+    load();
 </script>
 
 </body>
