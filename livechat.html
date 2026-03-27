@@ -3,28 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PASGABAT v32 // SUPRA REPLY</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>PASGABAT v34 // FINAL FIX</title>
+    
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #d4af37; --dark: #111; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: #000; color: #fff; font-family: 'Montserrat', sans-serif; margin: 0; height: 100vh; overflow: hidden; }
-        nav { height: 60px; border-bottom: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; font-weight: bold; background: #000; }
+        :root { --gold: #d4af37; --dark: #000; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #000; color: #fff; font-family: 'Montserrat', sans-serif; height: 100vh; overflow: hidden; }
+        nav { height: 60px; border-bottom: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; font-weight: bold; }
         #messages { height: calc(100vh - 150px); overflow-y: auto; padding: 20px 15px; display: flex; flex-direction: column; gap: 12px; }
-        
         .msg { padding: 12px; border-radius: 15px; max-width: 85%; clear: both; cursor: pointer; position: relative; }
         .msg-in { background: #1a1a1a; align-self: flex-start; border-left: 3px solid var(--gold); }
         .msg-out { background: rgba(212, 175, 55, 0.15); align-self: flex-end; border: 1px solid var(--gold); }
         .sender { color: var(--gold); font-size: 0.7em; font-weight: bold; margin-bottom: 5px; display: block; }
-
-        /* Reply Preview di Bubble */
         .replied-box { background: rgba(255,255,255,0.07); border-left: 3px solid var(--gold); padding: 5px 8px; font-size: 0.8em; margin-bottom: 8px; border-radius: 4px; color: #999; }
-
-        /* Bar Reply di atas Input */
         #reply-bar { background: #1a1a1a; padding: 10px 15px; display: none; justify-content: space-between; border-top: 1px solid var(--gold); align-items: center; }
-        #reply-bar span { font-size: 0.8em; color: var(--gold); }
-
+        #reply-label { font-size: 0.8em; color: var(--gold); }
         .input-bar { padding: 15px; background: #000; display: flex; gap: 10px; border-top: 1px solid #222; align-items: center; }
         input[type="text"] { flex: 1; padding: 12px; border-radius: 20px; border: 1px solid #333; background: #111; color: #fff; outline: none; }
         .btn { background: var(--gold); border: none; padding: 10px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
@@ -32,101 +28,117 @@
 </head>
 <body>
 
-<nav>PASGABAT SUPRA v32</nav>
+<nav>PASGABAT SUPRA v34</nav>
 <div id="messages"></div>
 
 <div id="reply-bar">
     <span id="reply-label">Membalas...</span>
-    <button onclick="cancelReply()" style="background:none; border:none; color:red; cursor:pointer">✕</button>
+    <button onclick="cancelReply()" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold">✕</button>
 </div>
 
 <div class="input-bar">
     <input type="file" id="f-in" style="display:none" accept="image/*">
     <button class="btn" onclick="document.getElementById('f-in').click()">📷</button>
-    <input type="text" id="t-in" placeholder="Klik pesan untuk balas..." autocomplete="off">
+    <input type="text" id="t-in" placeholder="Ketik pesan..." autocomplete="off">
     <button class="btn" onclick="send()">KIRIM</button>
 </div>
 
 <script>
-    const S_URL = 'https://ebhucnypxltzxwzillmp.supabase.co';
-    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViaHVjbnlweGx0enh3emlsbG1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzIzNjIsImV4cCI6MjA5MDEwODM2Mn0.UHwMf9Ac-8KJgsvUQ1NH6yvuNaimpK994FPTBoIiimE';
-    const _supa = supabase.createClient(S_URL, S_KEY);
-
-    let user = prompt("Nama:") || "Anon";
-    let replyId = null;
-    let msgCache = []; // Simpan lokal untuk fitur reply
-
-    async function load() {
-        const { data } = await _supa.from('message').select('*').order('created_at', { ascending: true });
-        if (data) {
-            msgCache = data;
-            document.getElementById('messages').innerHTML = "";
-            data.forEach(m => render(m));
-        }
-    }
-
-    function render(m) {
-        const box = document.getElementById('messages');
-        const div = document.createElement('div');
-        div.className = `msg ${m.sender === user ? 'msg-out' : 'msg-in'}`;
-        div.onclick = () => setReply(m.id, m.sender, m.content);
-
-        let replyHtml = "";
-        if (m.reply_to) {
-            const orig = msgCache.find(x => x.id === m.reply_to);
-            const txt = orig ? (orig.is_snap ? "📷 Foto Snap" : orig.content) : "Pesan dihapus";
-            replyHtml = `<div class="replied-box"><b>${orig ? orig.sender : 'System'}</b><br>${txt.substring(0,30)}</div>`;
+    // Membungkus seluruh kode agar menunggu library selesai dimuat
+    window.onload = function() {
+        const S_URL = 'https://ebhucnypxltzxwzillmp.supabase.co';
+        const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViaHVjbnlweGx0enh3emlsbG1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzIzNjIsImV4cCI6MjA5MDEwODM2Mn0.UHwMf9Ac-8KJgsvUQ1NH6yvuNaimpK994FPTBoIiimE';
+        
+        if (typeof supabase === 'undefined') {
+            alert("Library Supabase gagal dimuat. Cek koneksi internet!");
+            return;
         }
 
-        if (m.is_snap) {
-            div.innerHTML = `${replyHtml}<span class="sender">${m.sender}</span><div style="background:#333; padding:10px; border-radius:5px; text-align:center">📸 SNAP (Tahan)</div><img src="${m.content}" style="display:none; width:100%; border-radius:8px; margin-top:5px">`;
-            const b = div.querySelector('div:last-child'), i = div.querySelector('img');
-            b.onmousedown = b.ontouchstart = () => { i.style.display='block'; b.style.display='none'; };
-            b.onmouseup = b.ontouchend = () => { div.remove(); };
-        } else {
-            const s = document.createElement('span'); s.textContent = m.content;
-            div.innerHTML = `${replyHtml}<span class="sender">${m.sender}</span>${s.outerHTML}`;
+        const _supa = supabase.createClient(S_URL, S_KEY);
+        let user = prompt("Identitas Kamu:") || "User";
+        let replyId = null;
+        let msgCache = [];
+
+        async function load() {
+            const { data } = await _supa.from('message').select('*').order('created_at', { ascending: true });
+            if (data) {
+                msgCache = data;
+                document.getElementById('messages').innerHTML = "";
+                data.forEach(m => render(m));
+            }
         }
-        box.appendChild(div);
-        box.scrollTop = box.scrollHeight;
-    }
 
-    function setReply(id, sender, text) {
-        replyId = id;
-        document.getElementById('reply-bar').style.display = 'flex';
-        document.getElementById('reply-label').innerText = `Membalas ${sender}: "${text.substring(0,20)}..."`;
-    }
+        function render(m) {
+            if(!m.sender || !m.content) return;
+            const box = document.getElementById('messages');
+            const div = document.createElement('div');
+            div.className = `msg ${m.sender === user ? 'msg-out' : 'msg-in'}`;
+            div.onclick = () => setReply(m.id, m.sender, m.content);
 
-    function cancelReply() {
-        replyId = null;
-        document.getElementById('reply-bar').style.display = 'none';
-    }
+            let replyHtml = "";
+            if (m.reply_to) {
+                const orig = msgCache.find(x => x.id === m.reply_to);
+                const txt = orig ? (orig.is_snap ? "📷 Foto Snap" : orig.content) : "Pesan dihapus";
+                replyHtml = `<div class="replied-box"><b>${orig ? orig.sender : 'System'}</b><br>${txt.substring(0,25)}</div>`;
+            }
 
-    async function send() {
-        const inp = document.getElementById('t-in');
-        if(!inp.value.trim()) return;
-        const val = inp.value; inp.value = "";
-        const rId = replyId; cancelReply();
-        await _supa.from('message').insert([{ sender: user, content: val, is_snap: false, reply_to: rId }]);
-    }
+            let body = `${replyHtml}<span class="sender">${m.sender}</span>`;
+            if (m.is_snap) {
+                body += `<div style="background:#333; padding:10px; border-radius:5px; text-align:center">📸 SNAP (Tahan)</div><img src="${m.content}" style="display:none; width:100%; border-radius:8px; margin-top:5px">`;
+            } else {
+                const s = document.createElement('span'); s.textContent = m.content;
+                body += s.outerHTML;
+            }
+            
+            div.innerHTML = body;
+            if(m.is_snap) {
+                const b = div.querySelector('div:last-child'), i = div.querySelector('img');
+                b.onmousedown = b.ontouchstart = () => { i.style.display='block'; b.style.display='none'; };
+                b.onmouseup = b.ontouchend = () => { div.remove(); };
+            }
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
 
-    document.getElementById('f-in').onchange = async (e) => {
-        const file = e.target.files[0];
-        if(!file) return;
-        const name = `${Date.now()}_${file.name}`;
-        await _supa.storage.from('photos').upload(name, file);
-        const url = `${S_URL}/storage/v1/object/public/photos/${name}`;
-        const rId = replyId; cancelReply();
-        await _supa.from('message').insert([{ sender: user, content: url, is_snap: true, reply_to: rId }]);
+        window.setReply = function(id, sender, text) {
+            replyId = id;
+            document.getElementById('reply-bar').style.display = 'flex';
+            document.getElementById('reply-label').innerText = `Membalas ${sender}: "${text.substring(0,15)}..."`;
+            document.getElementById('t-in').focus();
+        }
+
+        window.cancelReply = function() {
+            replyId = null;
+            document.getElementById('reply-bar').style.display = 'none';
+        }
+
+        window.send = async function() {
+            const inp = document.getElementById('t-in');
+            if(!inp.value.trim()) return;
+            const val = inp.value; inp.value = "";
+            const rId = replyId; cancelReply();
+            await _supa.from('message').insert([{ sender: user, content: val, is_snap: false, reply_to: rId }]);
+        }
+
+        document.getElementById('f-in').onchange = async (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const name = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+            await _supa.storage.from('photos').upload(name, file);
+            const url = `${S_URL}/storage/v1/object/public/photos/${name}`;
+            const rId = replyId; cancelReply();
+            await _supa.from('message').insert([{ sender: user, content: url, is_snap: true, reply_to: rId }]);
+            e.target.value = "";
+        };
+
+        _supa.channel('any').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message' }, p => {
+            msgCache.push(p.new);
+            render(p.new);
+        }).subscribe();
+
+        load();
+        document.getElementById('t-in').onkeypress = (e) => { if(e.key === 'Enter') send(); };
     };
-
-    _supa.channel('any').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message' }, p => {
-        msgCache.push(p.new);
-        render(p.new);
-    }).subscribe();
-
-    load();
-    document.getElementById('t-in').onkeypress = (e) => { if(e.key === 'Enter') send(); };
 </script>
 </body>
 </html>
