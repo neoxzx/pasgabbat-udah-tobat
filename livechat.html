@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PASGABAT v41 // LIVE CHAT</title>
+    <title>PASGABAT v42 // FIX REALTIME</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
@@ -20,66 +20,44 @@
             overflow: hidden; 
             display: flex; 
             flex-direction: column;
-            padding-top: 80px; /* Ruang untuk navbar floating */
+            padding-top: 85px; 
         }
 
-        /* --- NAVBAR STYLE (SAMAKAN DENGAN HOME) --- */
+        /* --- NAVBAR FLOATING --- */
         nav { 
-            position: fixed; 
-            top: 20px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            z-index: 1000; 
-            background: rgba(0,0,0,0.8); 
-            backdrop-filter: blur(10px); 
-            padding: 12px 30px; 
-            border-radius: 50px; 
-            border: 1px solid var(--gold); 
-            display: flex; 
-            gap: 25px; 
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%); 
+            z-index: 1000; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); 
+            padding: 12px 25px; border-radius: 50px; border: 1px solid var(--gold); 
+            display: flex; gap: 20px; box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
             white-space: nowrap;
         }
-        nav a { 
-            color: #fff; 
-            text-decoration: none; 
-            font-size: 0.7rem; 
-            font-weight: 600; 
-            letter-spacing: 2px; 
-            text-transform: uppercase; 
-            transition: 0.3s; 
-        }
-        nav a:hover { color: var(--gold); }
+        nav a { color: #fff; text-decoration: none; font-size: 0.65rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; transition: 0.3s; }
+        nav a:hover { color: var(--gold); text-shadow: 0 0 5px var(--gold); }
 
         /* --- MESSAGES AREA --- */
-        #messages { flex: 1; overflow-y: auto; padding: 20px 15px; display: flex; flex-direction: column; gap: 12px; }
+        #messages { flex: 1; overflow-y: auto; padding: 10px 15px; display: flex; flex-direction: column; gap: 12px; }
         
-        .msg { padding: 12px; border-radius: 15px; max-width: 85%; clear: both; cursor: pointer; position: relative; animation: fadeIn 0.2s; }
+        .msg { padding: 12px; border-radius: 15px; max-width: 85%; clear: both; cursor: pointer; position: relative; animation: fadeIn 0.2s; transition: transform 0.1s; }
+        .msg:active { transform: scale(0.97); }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
         
-        .msg-in { background: #1a1a1a; align-self: flex-start; border-left: 3px solid var(--gold); }
-        .msg-out { background: rgba(212, 175, 55, 0.15); align-self: flex-end; border: 1px solid var(--gold); }
-        .sender { color: var(--gold); font-size: 0.7em; font-weight: bold; margin-bottom: 5px; display: block; font-family: 'Montserrat'; }
+        .msg-in { background: #111; align-self: flex-start; border-left: 3px solid var(--gold); }
+        .msg-out { background: rgba(212, 175, 55, 0.1); align-self: flex-end; border: 1px solid var(--gold); }
+        .sender { color: var(--gold); font-size: 0.65em; font-weight: bold; margin-bottom: 4px; display: block; }
 
-        /* Reply Preview */
-        .replied-box { background: rgba(255,255,255,0.07); border-left: 3px solid var(--gold); padding: 5px 8px; font-size: 0.8em; margin-bottom: 8px; border-radius: 4px; color: #999; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+        .replied-box { background: rgba(255,255,255,0.05); border-left: 2px solid var(--gold); padding: 5px 8px; font-size: 0.75em; margin-bottom: 8px; border-radius: 4px; color: #888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         /* SNAP STYLE */
-        .snap-container { cursor: pointer; position: relative; }
-        .snap-btn-msg { background: #222; padding: 15px 10px; border-radius: 10px; text-align: center; border: 1px dashed var(--gold); }
-        .snap-label { font-size: 0.9em; font-weight: bold; color: var(--gold); }
-        .snap-sublabel { font-size: 0.7em; color: #aaa; }
+        .snap-btn-msg { background: #1a1a1a; padding: 12px; border-radius: 10px; text-align: center; border: 1px dashed var(--gold); }
         .snap-img { width: 100%; border-radius: 10px; margin-top: 5px; display: none; pointer-events: none; }
 
-        /* Bar Reply */
-        #reply-bar { background: #1a1a1a; padding: 10px 15px; display: none; justify-content: space-between; border-top: 1px solid var(--gold); align-items: center; }
+        /* --- INPUT & REPLY BAR --- */
+        #reply-bar { background: #0a0a0a; padding: 8px 15px; display: none; justify-content: space-between; border-top: 1px solid var(--gold); align-items: center; }
         
-        /* Input Area */
         .input-bar { padding: 15px; background: #000; display: flex; gap: 10px; border-top: 1px solid #222; align-items: center; }
-        input[type="text"] { flex: 1; padding: 12px; border-radius: 20px; border: 1px solid #333; background: #111; color: #fff; outline: none; font-size: 16px; font-family: 'Montserrat'; }
-        .btn { background: var(--gold); border: none; padding: 10px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; color: #000; font-family: 'Montserrat'; }
-        
-        .loader { color: #d4af37; animation: spin 1s infinite linear; }
+        input[type="text"] { flex: 1; padding: 12px; border-radius: 20px; border: 1px solid #333; background: #111; color: #fff; outline: none; font-size: 16px; }
+        .btn { background: var(--gold); border: none; padding: 10px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; color: #000; }
+        .loader { animation: spin 1s infinite linear; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
@@ -95,14 +73,14 @@
 <div id="messages"></div>
 
 <div id="reply-bar">
-    <span id="reply-label" style="font-size:0.8em; color:#d4af37">Membalas seseorang...</span>
+    <span id="reply-label" style="font-size:0.75em; color:#d4af37">Membalas...</span>
     <button onclick="cancelReply()" style="background:none; border:none; color:var(--red); cursor:pointer; font-size: 1.2em;">✕</button>
 </div>
 
 <div class="input-bar">
     <input type="file" id="f-in" style="display:none" accept="image/*">
     <button class="btn" onclick="document.getElementById('f-in').click()" id="cam-btn">📷</button>
-    <input type="text" id="t-in" placeholder="Pesan neural..." autocomplete="off">
+    <input type="text" id="t-in" placeholder="Ketik pesan..." autocomplete="off">
     <button class="btn" onclick="sendText()">KIRIM</button>
 </div>
 
@@ -117,33 +95,33 @@
         let cache = [];
 
         async function loadData() {
-            const { data, error } = await _supa.from('message').select('*').order('created_at', { ascending: true });
-            if (error) return;
+            const { data } = await _supa.from('message').select('*').order('created_at', { ascending: true });
             if (data) { cache = data; document.getElementById('messages').innerHTML = ""; data.forEach(m => render(m)); }
         }
 
-        function attachSnapLogic(container, origId) {
-            if(!container) return;
-            const btn = container.querySelector('.snap-btn-msg');
-            const img = container.querySelector('.snap-img');
-            if (btn && img) {
-                container.onmousedown = container.ontouchstart = (e) => {
-                    e.stopPropagation();
-                    img.style.display = 'block';
-                    btn.style.display = 'none';
-                };
-                container.onmouseup = container.ontouchend = () => {
-                    container.parentElement.remove();
-                };
+        async function deleteMsg(id) {
+            if (confirm("Hapus pesan ini untuk semua orang?")) {
+                await _supa.from('message').delete().eq('id', id);
             }
         }
 
         function render(m) {
             if(!m || !m.sender || !m.content || m.sender === "undefined") return;
             const box = document.getElementById('messages');
+            
+            // Cek jika pesan sudah ada (biar tidak double)
+            if(document.getElementById(`msg-${m.id}`)) return;
+
             const div = document.createElement('div');
             div.className = `msg ${m.sender === user ? 'msg-out' : 'msg-in'}`;
+            div.id = `msg-${m.id}`;
             
+            // Tahan 1 detik untuk hapus
+            let timer;
+            div.onmousedown = div.ontouchstart = () => { timer = setTimeout(() => { deleteMsg(m.id); }, 1000); };
+            div.onmouseup = div.ontouchend = div.onmouseleave = () => clearTimeout(timer);
+
+            // Klik untuk reply
             div.onclick = () => { 
                 rId = m.id; 
                 document.getElementById('reply-bar').style.display='flex'; 
@@ -151,19 +129,16 @@
                 document.getElementById('t-in').focus();
             };
 
-            let html = `<span class="sender">${m.sender}</span>`;
+            let html = `<span class="sender">${m.sender.toUpperCase()}</span>`;
             if (m.reply_to) {
                 const orig = cache.find(x => x.id === m.reply_to);
-                if(orig) html += `<div class="replied-box"><b>${orig.sender}</b>: ${orig.is_snap ? '📷 Foto Snap' : orig.content.substring(0,25)}</div>`;
+                if(orig) html += `<div class="replied-box"><b>${orig.sender}</b>: ${orig.is_snap ? '📷 Foto' : orig.content.substring(0,20)}</div>`;
             }
 
             if (m.is_snap) {
-                html += `<div class="snap-container">
-                             <div class="snap-btn-msg">
-                                 <span class="snap-label">📸 SNAP TERKUNCI</span><br>
-                                 <span class="snap-sublabel">Tahan untuk melihat</span>
-                             </div>
-                             <img src="${m.content}" class="snap-img" onerror="this.src='https://via.placeholder.com/150?text=Gambar+Rusak'">
+                html += `<div class="snap-wrap">
+                            <div class="snap-btn-msg">📸 SNAP TERKUNCI<br><small style="font-size:9px;opacity:0.5">Tahan untuk melihat</small></div>
+                            <img src="${m.content}" class="snap-img">
                          </div>`;
             } else {
                 const s = document.createElement('span'); s.textContent = m.content; html += s.outerHTML;
@@ -171,7 +146,13 @@
             
             div.innerHTML = html;
             box.appendChild(div);
-            if(m.is_snap) attachSnapLogic(div.querySelector('.snap-container'), m.id);
+
+            const snapWrap = div.querySelector('.snap-wrap');
+            if(snapWrap) {
+                const btn = snapWrap.querySelector('.snap-btn-msg'), img = snapWrap.querySelector('.snap-img');
+                snapWrap.onmousedown = snapWrap.ontouchstart = (e) => { e.stopPropagation(); clearTimeout(timer); img.style.display = 'block'; btn.style.display = 'none'; };
+                snapWrap.onmouseup = snapWrap.ontouchend = () => div.remove();
+            }
             box.scrollTop = box.scrollHeight;
         }
 
@@ -198,8 +179,15 @@
             e.target.value = "";
         };
 
-        _supa.channel('room_neural').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message' }, p => { 
-            cache.push(p.new); render(p.new); 
+        // --- REALTIME FIXED (MENDENGARKAN SEMUA PERUBAHAN) ---
+        _supa.channel('any_change').on('postgres_changes', { event: '*', schema: 'public', table: 'message' }, p => { 
+            if(p.eventType === 'INSERT') {
+                cache.push(p.new); 
+                render(p.new); 
+            } else if(p.eventType === 'DELETE') {
+                const el = document.getElementById(`msg-${p.old.id}`);
+                if(el) el.remove();
+            }
         }).subscribe();
         
         loadData();
