@@ -3,40 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PASGABAT // SUPRA SNAP v23</title>
+    <title>PASGABAT // FINAL SUPRA</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
 
     <style>
-        :root { --gold: #d4af37; --dark: #000; --red: #ff4444; }
-        * { box-sizing: border-box; }
+        :root { --gold: #d4af37; --dark: #000; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { background: #000; color: #fff; font-family: 'Montserrat', sans-serif; margin: 0; height: 100%; overflow: hidden; }
         
-        nav { height: 60px; border-bottom: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; font-weight: bold; background: #000; position: fixed; top: 0; width: 100%; z-index: 1000; letter-spacing: 2px; }
+        nav { height: 60px; border-bottom: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; font-weight: bold; background: #000; position: fixed; top: 0; width: 100%; z-index: 1000; }
         
         #messages { position: absolute; top: 60px; bottom: 85px; left: 0; right: 0; overflow-y: auto; padding: 20px 15px; display: flex; flex-direction: column; gap: 15px; }
         
-        .msg { padding: 12px; border-radius: 15px; max-width: 80%; position: relative; clear: both; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
+        .msg { padding: 12px; border-radius: 15px; max-width: 80%; position: relative; clear: both; }
         .msg-in { background: #1a1a1a; align-self: flex-start; border-left: 3px solid var(--gold); }
         .msg-out { background: rgba(212, 175, 55, 0.15); align-self: flex-end; border: 1px solid var(--gold); }
         .sender { font-size: 10px; color: var(--gold); font-weight: bold; margin-bottom: 4px; display: block; }
         
         /* Snap Style */
-        .snap-box { background: #222; border-radius: 10px; padding: 15px; text-align: center; border: 1px dashed var(--gold); cursor: pointer; user-select: none; -webkit-user-select: none; }
-        .snap-img { width: 100%; max-width: 250px; display: none; border-radius: 8px; pointer-events: none; }
+        .snap-box { background: #222; border-radius: 10px; padding: 15px; text-align: center; border: 1px dashed var(--gold); cursor: pointer; }
+        .snap-img { width: 100%; max-width: 250px; display: none; border-radius: 8px; }
         .viewing .snap-img { display: block; }
         .viewing .label { display: none; }
 
-        .alert-ss { background: var(--red); color: #fff; padding: 6px; text-align: center; font-size: 11px; border-radius: 5px; font-weight: bold; margin: 10px 0; }
+        .alert-ss { background: #ff4444; color: #fff; padding: 6px; text-align: center; font-size: 11px; border-radius: 5px; font-weight: bold; margin: 10px 0; }
 
-        /* Input Area */
         .bottom-area { position: fixed; bottom: 0; width: 100%; background: #000; padding: 15px; border-top: 1px solid #222; display: flex; gap: 10px; align-items: center; }
         input[type="text"] { flex: 1; background: #111; border: 1px solid #333; color: #fff; padding: 12px 18px; border-radius: 25px; outline: none; font-size: 16px; }
         .btn-icon { background: #222; border: 1px solid var(--gold); color: var(--gold); width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .btn-send { background: var(--gold); border: none; padding: 0 20px; height: 45px; border-radius: 25px; font-weight: bold; cursor: pointer; color: #000; }
         #file-input { display: none; }
     </style>
 </head>
@@ -49,31 +45,24 @@
         <label for="file-input" class="btn-icon">📷</label>
         <input type="file" id="file-input" accept="image/*">
         <input type="text" id="chat-in" placeholder="Ketik pesan..." autocomplete="off">
-        <button onclick="sendText()" class="btn-send">KIRIM</button>
+        <button onclick="sendText()" class="btn-icon" style="width: auto; padding: 0 20px; border-radius: 25px;">KIRIM</button>
     </div>
 
     <script>
-        // CONFIG SUPABASE ATHALLA
+        // CONFIG SUPABASE ATHALLA (SAMA SEPERTI SEBELUMNYA)
         const SUPABASE_URL = 'https://ebhucnypxltzxwzillmp.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_6AaF_oCwOuZla0OjibEjXA_xiHYVzvL';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let user = prompt("Identitas Kamu:") || "User_" + Math.floor(Math.random()*100);
+        let user = prompt("Nama Kamu:") || "User_" + Math.floor(Math.random()*100);
 
-        // 1. Deteksi SS (Desktop)
-        window.addEventListener('keyup', (e) => {
-            if (e.key === 'PrintScreen') {
-                _supabase.from('message').insert([{ sender: user, content: 'Mencoba Screenshot! 🚨', type: 'alert' }]);
-            }
-        });
-
-        // 2. Load Pesan Awal
+        // 1. Ambil Pesan Lama
         async function fetchHistory() {
             const { data } = await _supabase.from('message').select('*').order('created_at', { ascending: true }).limit(50);
             if (data) data.forEach(msg => render(msg));
         }
 
-        // 3. Kirim Teks
+        // 2. Kirim Teks
         async function sendText() {
             const inp = document.getElementById('chat-in');
             if(!inp.value.trim()) return;
@@ -81,7 +70,7 @@
             inp.value = "";
         }
 
-        // 4. REVISI: Kirim Foto ke Supabase Storage
+        // 3. FIX UPLOAD FOTO (MENGGUNAKAN SUPABASE STORAGE)
         document.getElementById('file-input').onchange = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -89,41 +78,46 @@
             const btn = document.querySelector('label[for="file-input"]');
             btn.textContent = "⏳";
 
-            const fileName = `${Date.now()}_${file.name}`;
+            // Buat Nama File Unik
+            const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
 
-            // Upload ke Supabase Storage (Bucket: photos)
-            const { data: uploadData, error: uploadError } = await _supabase.storage
-                .from('photos')
-                .upload(fileName, file);
-            
-            if (uploadError) {
-                console.error("Upload Error:", uploadError.message);
-                alert("Gagal Upload! Pastikan Policy 'true' sudah disave di Storage.");
+            try {
+                // Upload ke bucket 'photos'
+                const { data: uploadData, error: uploadError } = await _supabase.storage
+                    .from('photos')
+                    .upload(fileName, file);
+                
+                if (uploadError) throw uploadError;
+
+                // Ambil URL Publik secara manual
+                const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/photos/${fileName}`;
+
+                // Simpan ke Database
+                const { error: dbError } = await _supabase.from('message').insert([
+                    { sender: user, content: publicUrl, is_snap: true }
+                ]);
+
+                if (dbError) throw dbError;
+
+            } catch (err) {
+                alert("ERROR: " + err.message);
+                console.error(err);
+            } finally {
                 btn.textContent = "📷";
-                return;
+                e.target.value = ""; // Reset input file
             }
-
-            // Ambil URL Publik
-            const { data: urlData } = _supabase.storage.from('photos').getPublicUrl(fileName);
-
-            // Simpan ke Database Tabel 'message'
-            await _supabase.from('message').insert([
-                { sender: user, content: urlData.publicUrl, is_snap: true }
-            ]);
-
-            btn.textContent = "📷";
         };
 
-        // 5. Render ke Layar
+        // 4. Tampilkan Pesan
         function render(msg) {
             const box = document.getElementById('messages');
             const div = document.createElement('div');
+            const isMe = msg.sender === user;
             
             if(msg.type === 'alert') {
                 div.className = 'alert-ss';
                 div.textContent = `🚨 ${msg.sender} ${msg.content}`;
             } else {
-                const isMe = msg.sender === user;
                 div.className = `msg ${isMe ? 'msg-out' : 'msg-in'}`;
                 let body = `<span class="sender">${msg.sender.toUpperCase()}</span>`;
                 
@@ -131,7 +125,7 @@
                     body += `
                         <div class="snap-box" onmousedown="this.classList.add('viewing')" onmouseup="this.remove()" ontouchstart="this.classList.add('viewing')" ontouchend="this.remove()">
                             <span class="label">📸 SNAP TERKUNCI<br><small>Tahan untuk melihat</small></span>
-                            <img src="${msg.content}" class="snap-img">
+                            <img src="${msg.content}" class="snap-img" onerror="this.src='https://via.placeholder.com/150?text=Error+Loading+Image'">
                         </div>`;
                 } else {
                     const textSpan = document.createElement('span');
@@ -145,7 +139,7 @@
             box.scrollTop = box.scrollHeight;
         }
 
-        // 6. Listener Realtime
+        // 5. Realtime Listener
         _supabase.channel('public:message')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message' }, payload => {
                 render(payload.new);
@@ -154,6 +148,13 @@
 
         fetchHistory();
         document.getElementById('chat-in').onkeypress = (e) => { if(e.key === 'Enter') sendText(); };
+
+        // Deteksi SS
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'PrintScreen') {
+                _supabase.from('message').insert([{ sender: user, content: 'MENANGKAP SCREENSHOT! 🚨', type: 'alert' }]);
+            }
+        });
     </script>
 </body>
 </html>
